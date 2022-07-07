@@ -1,5 +1,6 @@
 package com.crow.oauthex.security.handler;
 
+import com.crow.oauthex.security.dto.OAuthMemberDTO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +22,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
 
     public LoginSuccessHandler(PasswordEncoder passwordEncoder) {
-    this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -29,5 +30,19 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("------------------");
         log.info("onAuthenticationSuccess");
+
+        OAuthMemberDTO oAuthMemberDTO = (OAuthMemberDTO) authentication.getPrincipal();
+
+        boolean fromsocial = oAuthMemberDTO.isFromSocial();
+
+        log.info("Need Modify Member?" + fromsocial);
+
+        boolean passwordResult = passwordEncoder.matches("1111", oAuthMemberDTO.getPassword());
+
+        if (fromsocial && passwordResult) {
+            redirectStrategy.sendRedirect(request, response, "/sample/member?from=social");
+            // 리다이렉트 일단 member.html로 보냄
+
+        }
     }
 }

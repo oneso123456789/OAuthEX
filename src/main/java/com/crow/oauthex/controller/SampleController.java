@@ -19,6 +19,7 @@ public class SampleController {
         log.info("exAll...............");
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/member")
     public void exMember(@AuthenticationPrincipal OAuthMemberDTO oAuthMemberDTO) {
 

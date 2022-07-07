@@ -2,7 +2,6 @@ package com.crow.oauthex.config;
 
 import com.crow.oauthex.security.handler.LoginSuccessHandler;
 import com.crow.oauthex.security.service.AuthUserDetailsService;
-import com.crow.oauthex.security.service.OAuth2UserDetailsService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -48,13 +47,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 /*        http.authorizeRequests().antMatchers("/sample/all").permitAll()
-                .antMatchers("/sample/member").hasRole("USER");  Controller에 PreAuthorize 처리*/
+                .antMatchers("/sample/member").hasRole("USER");  Controller에 @PreAuthorize 처리*/
 
         http.formLogin();
         http.csrf().disable();
         http.logout();
         http.oauth2Login().successHandler(successHandler());
         http.rememberMe().tokenValiditySeconds(60*60).userDetailsService(userDetailsService); //토큰 한시간짜리
+
 
         return http.build();
     }
