@@ -12,4 +12,6 @@ public interface OAuthMemberRepository extends JpaRepository<OAuthMember, String
     @EntityGraph(attributePaths = {"roleSet"}, type = EntityGraph.EntityGraphType.LOAD)
     @Query("select m from OAuthMember m where m.fromSocial = :social and m.email =:email")
     Optional<OAuthMember> findByEmail(String email, boolean social);
+
+
 }
