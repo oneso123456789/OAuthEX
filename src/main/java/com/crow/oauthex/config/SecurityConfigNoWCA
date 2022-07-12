@@ -1,0 +1,60 @@
+@Configuration
+@Log4j2
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final ClubUserDetailService userDetailsService;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.formLogin();
+        http.csrf().disable();
+        http.logout();
+
+        http.oauth2Login().successHandler(successHandler());
+        http.rememberMe().tokenValiditySeconds(60*60*7)
+                .userDetailsService(userDetailsService);
+
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+
+        http.addFilterBefore(apiCheckFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(apiLoginFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public ClubLoginSuccessHandler successHandler() {
+        return new ClubLoginSuccessHandler(passwordEncoder());
+    }
+
+    @Bean
+    public ApiCheckFilter apiCheckFilter() {
+        return new ApiCheckFilter("/notes/**/*", jwtUtil());
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public ApiLoginFilter apiLoginFilter(AuthenticationManager authenticationManager) throws Exception {
+        ApiLoginFilter apiLoginFilter = new ApiLoginFilter("/api/login", jwtUtil());
+        apiLoginFilter.setAuthenticationManager(authenticationManager);
+
+        apiLoginFilter.setAuthenticationFailureHandler(new ApiLoginFailHandler());
+        return apiLoginFilter;
+    }
+
+    @Bean
+    public JWTUtil jwtUtil() {
+        return new JWTUtil();
+    }
+}
